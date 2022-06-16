@@ -1,4 +1,4 @@
-# Aemulus Package Manager P3F PS2/P4G PC/P5 PS3/P5S PC
+# Aemulus Package Manager
 ## Introduction
 The wait is finally over!  No longer will you have to manually merge conflicting bin, bmd, pm1, bf and tbl files found in different mods.  This is the latest and greatest mod package manager, made specifically for Persona 4 Golden on PC, Persona 3 FES, Persona 5, and Persona 5 Strikers.
 
@@ -10,11 +10,19 @@ For YACPKTool to unpack/pack cpk's for Persona 5, you'll need [Microsoft Visual 
 
 For Persona 4 Golden on PC, [make sure you've set up Reloaded-II and the P4G mod loader first and foremost.](https://gamebanana.com/tuts/13379)
 
+For Persona 4 Golden on Vita, [setup the proper patches for mod loading from mod.cpk/m0.cpk/m1.cpk/m2.cpk/m3.cpk](https://github.com/zarroboogs/p4g-patches)
+
 For Persona 3 FES, [setup HostFS for mod loading.](https://shrinefox.com/guides/2020/04/10/modding-using-hostfs-on-pcsx2-p3-p4-smt3/)
+
+For Persona 3 Portable, [setup the proper patches for mod loading from bind/mod.cpk/mod1.cpk/mod2.cpk/mod3.cpk](https://github.com/zarroboogs/p3p-patches)
 
 For Persona 5, [setup the proper patches for mod loading from mod.cpk.](https://shrinefox.com/guides/2019/04/19/persona-5-rpcs3-modding-guide-1-downloads-and-setup/) Just ignore the Setting Up Mod Compendium section since you'll be using Aemulus instead.
 
+For Persona 5 Royal, [setup the proper patches for mod loading from bind/mod.cpk/mod1.cpk/mod2.cpk/mod3.cpk](https://github.com/zarroboogs/ppp)
+
 For Persona 5 Strikers, nothing is need other than Aemulus!
+
+For Persona Q2, [setup the proper patches for mod loading from mod.cpk](https://github.com/DeathChaos25/PQ_Patches)
 
 To easily download all prerequisites at once, I recommend using Pixelguin's [All-in-One Installer](https://gamebanana.com/tools/6928).
 
@@ -23,9 +31,13 @@ After unzipping the download, just double-click AemulusPackageManager.exe to lau
 
 The first thing you'll want to do is click the Config button on the top left.  From there click the Select Output Folder button on top.  
 - **For Persona 4 Golden**, select the mods folder found in your Persona 4 Golden Steam game directory.  This is where your merged mod loadout will be output.
+- **For Persona 4 Golden (Vita)**, select the data folder within the Vita game folder or any folder for FTPing later.
 - **For Persona 3 FES**, select the same folder that SLUS_216.21.ELF is located.
+- **For Persona 3 Portable**, select ...\PSP\P3P in the memstick of the PSP or any folder for FTPing later.
 - **For Persona 5**, select \PS3_GAME\USRDIR found by right clicking the game in RPCS3 and selecting Open Install Folder.
+- **For Persona 5 Royal**, select \data\p5r or any other folder for FTPing later.
 - **For Persona 5 Strikers**, select ...\P5S\data\motor_rsc.
+- **For Persona Q2**, select sd:/luma/titles/<title_id>/romfs/ or <citra_vfs>/load/mods/<title_id>/romfs/.
 
 ### Unpacking Base Files
 
@@ -112,12 +124,42 @@ When Aemulus builds your mod it will see that there is a flow file and then copy
 
 Bmd and Pm1 merging is done entirely automatically, meaning no additional work is required for mod authors. The way it works internally is the pm1s or bmds to be merged are compared with their original version by decompiling them into msg files. Then any messages that are different to the original are added to a list, if both files edit the same message the higher priority one will be added. Then all of the changed messages are replaced in a msg files which is finally recompiled as a bmd or pm1 to be used.
 
-## How Table Patching Works
-New Feature Added in v1.1!
+## How Binary Patching Works
 
+Newly added in v5.5.6, binary patching is a feature that takes .bp files from a binarypatches folder within a package to overwrite/append bytes to any file.
+
+### Structure of .bp Files (for modders)
+An example of the setup of the file is as follows:
+```
+{
+  "Version": 1,
+  "Patches": [
+    {
+      "file": "init_free\\init\\cmpTable\\cmpConfigHelp.ctd",
+      "offset": 69,
+      "data": "42 00 69"
+    }
+  ]
+}
+```
+First and foremost, make sure you have Version set to 1. Otherwise, none of the patches will be read.
+
+Next, there is a list of Patches.
+
+#### Patch
+- file - path of file with the same conventions used for file merging. For Persona 4 Golden, skip the data_e folder
+- offset - Position to start writing data
+- data - The binary data to overwrite at the given offset represented as a space separated hex string
+
+### Common Issues
+
+Binary patching only works on files that are already found in the output folder from perhaps another mod or from the original folder.  If you unpacked files from before v5.5.6, you might need to unpack again. If the file that needs to be patched still isn't unpacked from the Original folder, let me know and I'll add it in
+
+## How Table Patching Works
+  
 Table patching is a feature that was carried over from Inaba Exe Patcher (formerly known as Aemulus Patcher/Exe Patcher).  It takes .tblpatch files from the top layer of your Package folders to modify .tbl files found in init_free.bin for P4G, table.pac for P5, and BTL/BATTLE for P3F.
 
-### NEW - Structure of .tbp Files (for modders)
+### Structure of .tbp Files (for modders)
 
 For more readablity and support of expanding .tbl files (mostly seen in Persona 5) all in one file, I added this new format.  Old .tblpatch files still work for those who don't want to convert yet but I highly recommend switching over. This new file still goes in the tblpatches folder.
 
@@ -184,7 +226,7 @@ Next, there is a list of Patches. Note that NAME.TBL patches have different memb
 ### Structure of .tblpatch Files (for modders)
 
 First three bytes of the .tblpatch file is the tbl id, or 3 letters that indicate which tbl file it is.
-P4G TBLS:
+P4G (PC/Vita) TBLS:
 - SKILL.TBL - SKL
 - UNIT.TBL - UNT
 - MSG.TBL - MSG
@@ -209,7 +251,17 @@ P3F TBLS:
 - UNIT - UNT
 - UNIT_F - UNF
 
-P5 TBLS:
+P3P TBLS:
+- AICALC - AIC
+- EFFECT - EFF
+- ENCOUNT - ENC
+- MODEL - MDL
+- MSG - MSG
+- PERSONA - PSA
+- SKILL - SKL
+- UNIT - UNT
+
+P5/P5R TBLS:
 - AICALC - AIC
 - ELSAI - EAI
 - ENCOUNT - ENC
@@ -236,11 +288,11 @@ Finally, the rest of the bytes will be used to overwrite the hex starting at the
 <img src="https://i.imgur.com/yoCYwAJ.png">
 In this case we'll just be using 57 65 65 62 00 00 00 00 (Weeb 00 00 00 00) to overwrite the hex found at the previously stated offset of 592 in MSG.TBL.
 
-I recommend for you to use [010 Editor](https://www.sweetscape.com/010editor/) and [these templates](https://github.com/TGEnigma/010-Editor-Templates) if you want to mess with .tbl files to create .tblpatch's.  Do note that my examples are really small to easily fit in this description but you can overwrite as much bytes as you want so that you don't need to create too many .tblpatch files.  You can also utilize (P4G only) T-Pose Ratkechi's [Aemulus TBL Patcher](https://gamebanana.com/tools/6876), to easily convert your edited tbl's to .tblpatch's.
+I recommend for you to use [010 Editor](https://www.sweetscape.com/010editor/) and [these templates](https://github.com/TGEnigma/010-Editor-Templates) if you want to mess with .tbl files to create .tblpatch's.  Do note that my examples are really small to easily fit in this description but you can overwrite as much bytes as you want so that you don't need to create too many .tblpatch files.  You can also utilize (P3F, P4G, P5 only) T-Pose Ratkechi's [Aemulus TBL Patcher](https://gamebanana.com/tools/6876), to easily convert your edited tbl's to .tblpatch's.
 
-As for NAME.TBL in Persona 5, the file is setup differently so that instead of the 8 bytes used for the offset, it is instead split into 1 byte for the section number and the next 2 bytes for the index.  This also supports expanding more entries in NAME.TBL so feel free to use larger indices. In the future, I might refactor the rest of the tblpatches to follow this format.
+As for NAME.TBL in Persona 5 and Persona 5 Royal, the file is setup differently so that instead of the 8 bytes used for the offset, it is instead split into 1 byte for the section number and the next 2 bytes for the index.  This also supports expanding more entries in NAME.TBL so feel free to use larger indices. In the future, I might refactor the rest of the tblpatches to follow this format.
 
-For reference, here's the section numbers in NAME.TBL:
+For reference, here's the section numbers in NAME.TBL in Persona 5:
  * ArcanaNames - 0
  * SkillNames - 1
  * UnitNames - 2
@@ -260,10 +312,18 @@ For reference, here's the section numbers in NAME.TBL:
  * RangedWeaponNames - 16
 
 ### The Actual Table Patching Process
-1. Extracts all .tbl files from init_free.bin or table.pac (unneccesary for Persona 3 FES).
+1. Extracts all .tbl files if inside an archive.
 2. Goes through each package folder from the bottom up (again after the merging process) and applies each tblpatch file it finds to the .tbl file it specifies.
 3. Repacks the edited .tbl files into init_free.bin or table.pac (unneccesary for Persona 3 FES).
 Deletes the temporarily extracted/edited tbl files.
+
+## Loadouts
+
+You can create loadouts per game by using the dropdown menu on the top left. Clicking Add new loadout... will create a new loadout with the option to copy over your current one. You can also right click to hide/unhide packages and use the eye button to actually hide/unhide them.
+
+## P3F PCSX2 Cheats Support
+
+You can now add a path to the PCSX2 cheats folder in P3F's config. It will copy over all pnach files from a cheats folder within a package to the PCSX2 cheats folder. On rebuild, Aemulus clears only all of the copied over pnach files from that folder.
 
 ## Prebuild.bat Support
 
@@ -340,6 +400,14 @@ Since Aemulus Package Manager deletes the entire mods directory everytime you re
 ## Launching the Game from the Manager
 A new QoL feature added in v1.2 is the Launch button.  This is used to be able to launch your modded game straight from the package manager after building your loadout.  You can setup the paths for this to work in the config menu.  Under <Persona Game> Launch Shortcut Setup click browse to select the paths required.  Once you picked valid exe's, the Launch button on the main window will now start the game for you.
 
+## Ignore.aem
+Creating a new package or building an existing one will create a file called Ignore.aem. The purpose of this file is to allow mod creators to keep loose files in their mod without having those files moved and built into the mod output. To make use of this file, open the file in your favorite text editor and add the path to the file (or directory) to the first available line
+```
+  script\init.flow
+  camp\cardTex\c_card1e.dds
+  scheduler\hook\
+  field\panel\fldPanelLmap\
+```
 ## For Mod Creators - Aemulus Logo Overlay
 If you'd like to include an Aemulus overlay in your mod thumbnails to indicate that it supports Aemulus (which just means having a named folder and a mods.aem if necessary), you can use the file aemulus_overlay.png included in the download.  Thanks to Pixelguin for designing it.
 
@@ -356,9 +424,3 @@ These mods just need to have a simple directory change to make them work in Aemu
 
 ### Why is my antivirus acting up?
 For some reason the latest update triggered some of my testers' antivirus programs.  Simply make AemulusPackageManager.exe an exception in order to use it.  The code base is now open source so feel free to look through it and even build it yourself if you're still worried about the antivirus notification.
-
-## Future Plans
-I have a lot of ideas in mind to keep on improving Aemulus.  These include the following: 
-
-- Improve my code and algorithms to optimize the merging process
-- Add separators between mods (requested by Pixelguin to use for his modpack)

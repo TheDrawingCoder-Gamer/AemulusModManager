@@ -9,7 +9,7 @@
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:local="clr-namespace:AemulusModManager" xmlns:local1="clr-namespace:AemulusModManager.Utilities.Windows"
         mc:Ignorable="d" SizeChanged="Window_SizeChanged"
-        Title="Aemulus Package Manager" Height="720" Width="1180" MinHeight="720" MinWidth="1180"
+        Title="Aemulus Package Manager" Height="720" Width="1280" MinHeight="720" MinWidth="1280"
         Background="#151515" Closing="Window_Closing" KeyDown="Window_KeyDown">
     <Window.Resources>
         <local:UrlConverter x:Key="UrlConverter"/>
@@ -142,7 +142,31 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-
+                    <TextBlock VerticalAlignment="Center" Panel.ZIndex="4" FontSize="40" FontWeight="Medium" HorizontalAlignment="Center" Foreground="#f2f2f2">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsObsolete}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Setter Property="Text" Value="OBSOLETE"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Rectangle Height="172" Panel.ZIndex="3" Fill="#202020" Opacity="0.99" Stretch="UniformToFill" Margin="5,10,5,5" VerticalAlignment="Center">
+                        <Rectangle.Style>
+                            <Style TargetType="{x:Type Rectangle}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsObsolete}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Rectangle.Style>
+                    </Rectangle>
                     <Image Margin="5,10,5,5" Source="{Binding Path=Image,Mode=OneWay,IsAsync=True}" Height="168" Panel.ZIndex="2"  VerticalAlignment="Center" Stretch="Uniform"/>
                     <Rectangle Height="168" Panel.ZIndex="1" Fill="Black" Stretch="UniformToFill" Margin="5,10,5,5" VerticalAlignment="Center">
                         <Rectangle.OpacityMask>
@@ -460,7 +484,7 @@
                     </Setter>
                 </Style>
             </TabControl.Resources>
-            
+
             <TabItem Name="ManagerTab" FontSize="18" HorizontalAlignment="Center" Header="Manage Packages">
                 <TabItem.Content>
                     <Grid Margin="10">
@@ -533,6 +557,21 @@
                                 </TextBlock>
                             </Border>
                         </Popup>
+                        <Popup PlacementTarget="{Binding ElementName=MergeImagesButton}" IsOpen="{Binding IsMouseDirectlyOver, ElementName=MergeImagesButton, Mode=OneWay}" AllowsTransparency="True">
+                            <Border CornerRadius="5" Panel.ZIndex="0" Margin="10">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush Color="#101010" Opacity="0.9"/>
+                                </Border.BorderBrush>
+                                <Border.Background>
+                                    <SolidColorBrush Color="#101010" Opacity="0.9"/>
+                                </Border.Background>
+                                <TextBlock Margin="10" Foreground="#f2f2f2" FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center" >
+                                    Build and Merge Package Loadout
+                                    <LineBreak/>
+                                    (Ctrl+B)
+                                </TextBlock>
+                            </Border>
+                        </Popup>
                         <fa5:ImageAwesome Name="LaunchButton" MouseEnter="MouseEnterColorChange" MouseLeave="MouseLeaveColorChange" Cursor="Hand" PreviewMouseLeftButtonDown="LaunchClick"  VerticalAlignment="Center" Icon="Solid_Rocket" Grid.Column="9" Grid.Row="0" Width="32"/>
                         <Popup PlacementTarget="{Binding ElementName=LaunchButton}" IsOpen="{Binding IsMouseDirectlyOver, ElementName=LaunchButton, Mode=OneWay}" AllowsTransparency="True">
                             <Border CornerRadius="5" Panel.ZIndex="0" Margin="10">
@@ -573,7 +612,7 @@
                                 <TextBlock Name="PriorityPopup" Margin="10" Text="Switch Order of Priority" Foreground="#f2f2f2" FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center" />
                             </Border>
                         </Popup>
-                        <fa5:ImageAwesome Name="NewButton" DragEnter="Add_Enter" Drop="Add_Drop" AllowDrop="True" MouseEnter="MouseEnterColorChange" MouseLeave="MouseLeaveColorChange" Cursor="Hand" PreviewMouseLeftButtonDown="NewClick" VerticalAlignment="Center" Icon="Solid_FolderPlus" Grid.Column="10" Grid.Row="0" Width="37"/>
+                        <fa5:ImageAwesome Name="NewButton" MouseEnter="MouseEnterColorChange" MouseLeave="MouseLeaveColorChange" Cursor="Hand" PreviewMouseLeftButtonDown="NewClick" VerticalAlignment="Center" Icon="Solid_FolderPlus" Grid.Column="10" Grid.Row="0" Width="37"/>
                         <Popup PlacementTarget="{Binding ElementName=NewButton}" IsOpen="{Binding IsMouseDirectlyOver, ElementName=NewButton, Mode=OneWay}" AllowsTransparency="True">
                             <Border CornerRadius="5" Panel.ZIndex="0" Margin="10">
                                 <Border.BorderBrush>
@@ -584,8 +623,6 @@
                                 </Border.Background>
                                 <TextBlock Margin="10" Foreground="#f2f2f2" FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center" >
                                     Create a New Package (Ctrl+N)
-                                    <LineBreak/>
-                                    or Drag Existing Packages Here
                                 </TextBlock>
                             </Border>
                         </Popup>
@@ -608,10 +645,22 @@
                                     <TextBlock Text="Persona 3 FES" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
                                 </StackPanel>
                             </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Image Source="../Assets/p3picon.png" Width="32" Margin="4,0,10,0"/>
+                                    <TextBlock Text="Persona 3 Portable" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
+                                </StackPanel>
+                            </ComboBoxItem>
                             <ComboBoxItem IsSelected="True">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Image Source="../Assets/p4gicon.png" Width="32" Margin="4,0,10,0"/>
                                     <TextBlock Text="Persona 4 Golden" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem IsSelected="True">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Image Source="../Assets/p4gicon.png" Width="32" Margin="4,0,10,0"/>
+                                    <TextBlock Text="Persona 4 Golden (Vita)" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
                                 </StackPanel>
                             </ComboBoxItem>
                             <ComboBoxItem>
@@ -622,8 +671,20 @@
                             </ComboBoxItem>
                             <ComboBoxItem>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Image Source="../Assets/p5ricon.png" Width="32" Margin="4,0,10,0"/>
+                                    <TextBlock Text="Persona 5 Royal" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Image Source="../Assets/p5sicon.png" Width="32" Margin="4,0,10,0"/>
                                     <TextBlock Text="Persona 5 Strikers" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Image Source="../Assets/pq2icon.png" Width="32" Margin="4,0,10,0"/>
+                                    <TextBlock Text="Persona Q2" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
                                 </StackPanel>
                             </ComboBoxItem>
                         </ComboBox>
@@ -644,7 +705,11 @@
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="40"/>
                                 </Grid.ColumnDefinitions>
-                                <DataGrid FontSize="12" Name="ModGrid" AutoGenerateColumns="False" GridLinesVisibility="None" VerticalScrollBarVisibility="Auto"  BorderBrush="#424242"
+                                <Grid Visibility="Collapsed" Name="DropBox" Margin="4,10,0,3" Panel.ZIndex="2" DragLeave="Add_Leave" DragEnter="Add_Enter" Drop="Add_Drop" AllowDrop="True" Background="Transparent">
+                                    <Border Opacity="0.7" Background="Black"/>
+                                    <TextBlock Foreground="#f2f2f2" FontSize="40" Panel.ZIndex="3" VerticalAlignment="Center" HorizontalAlignment="Center">Drop existing packages to install</TextBlock>
+                                </Grid>
+                                <DataGrid DragEnter="Add_Enter" FontSize="12" Name="ModGrid" AutoGenerateColumns="False" GridLinesVisibility="None" VerticalScrollBarVisibility="Auto"  BorderBrush="#424242"
                           EnableColumnVirtualization="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" 
                           CanUserResizeColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" AlternatingRowBackground="#2A2A2A"
                           dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" HeadersVisibility="Column" HorizontalScrollBarVisibility="Hidden"
@@ -830,7 +895,7 @@
                                                 <Border.Background>
                                                     <SolidColorBrush Color="#101010" Opacity="0.9"/>
                                                 </Border.Background>
-                                                <TextBlock Margin="10" Text="Open PDF Guide to Get Started!" Foreground="#f2f2f2" FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center" />
+                                                <TextBlock Margin="10" Text="Open Guide to Get Started!" Foreground="#f2f2f2" FontWeight="SemiBold" FontSize="18" VerticalAlignment="Center" />
                                             </Border>
                                         </Popup>
                                         <StackPanel Background="Transparent" Name="KofiPanel" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" PreviewMouseLeftButtonDown="Kofi_Click" Cursor="Hand">
@@ -870,7 +935,13 @@
                                 </Border>
                             </Grid>
 
-
+                            <Button Content="Clear Logs" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Top" Panel.ZIndex="2" Margin="10" FontSize="14" Click="ClearLogs_Click">
+                                <Button.Resources>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Setter Property="CornerRadius" Value="2"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
                             <RichTextBox FontSize="12" FontFamily="{StaticResource Monospace}" x:Name="ConsoleOutput" Background="#202020" BorderBrush="#424242" Margin="4,3,5.5,0" ClipToBounds="False" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" TextChanged="ScrollToBottom" IsReadOnly="True">
                                 <RichTextBox.Resources>
                                     <Style TargetType="{x:Type Paragraph}">
@@ -1058,18 +1129,39 @@
                             </Button>
                         </StackPanel>
                     </Grid>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <ComboBox IsEnabled="False" Margin="0,0,15,0" Name="GameFilterBox" Height="40" Width="230" FontSize="18" FontWeight="SemiBold" SelectionChanged="GameFilterSelectionChanged">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="85"/>
+                            <ColumnDefinition Width="0.65*"/>
+                            <ColumnDefinition Width="0.65*"/>
+                            <ColumnDefinition Width="1.2*"/>
+                            <ColumnDefinition Width="1.2*"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="60"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0" Margin="10,0,0,0"  IsEnabled="False" Name="GameFilterBox" Height="40" Width="75" FontSize="18" FontWeight="SemiBold" SelectionChanged="GameFilterSelectionChanged">
                             <ComboBoxItem>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Image Source="../Assets/p3ficon.png" Width="32" Margin="4,0,10,0"/>
                                     <TextBlock Text="Persona 3 FES" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
                                 </StackPanel>
                             </ComboBoxItem>
-                            <ComboBoxItem >
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Image Source="../Assets/p3picon.png" Width="32" Margin="4,0,10,0"/>
+                                    <TextBlock Text="Persona 3 Portable" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem IsSelected="True">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Image Source="../Assets/p4gicon.png" Width="32" Margin="4,0,10,0"/>
                                     <TextBlock Text="Persona 4 Golden" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem IsSelected="True">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Image Source="../Assets/p4gicon.png" Width="32" Margin="4,0,10,0"/>
+                                    <TextBlock Text="Persona 4 Golden (Vita)" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
                                 </StackPanel>
                             </ComboBoxItem>
                             <ComboBoxItem>
@@ -1080,24 +1172,32 @@
                             </ComboBoxItem>
                             <ComboBoxItem>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Image Source="../Assets/p5ricon.png" Width="32" Margin="4,0,10,0"/>
+                                    <TextBlock Text="Persona 5 Royal" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Image Source="../Assets/p5sicon.png" Width="32" Margin="4,0,10,0"/>
                                     <TextBlock Text="Persona 5 Strikers" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
                                 </StackPanel>
                             </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Image Source="../Assets/pq2icon.png" Width="32" Margin="4,0,10,0"/>
+                                    <TextBlock Text="Persona Q2" VerticalAlignment="Center" FontFamily="{StaticResource Jost}"/>
+                                </StackPanel>
+                            </ComboBoxItem>
                         </ComboBox>
-                        <ComboBox FontFamily="{StaticResource Jost}" IsEnabled="False" Margin="0,0,15,0" Name="FilterBox" Height="40" Width="140" FontSize="18" FontWeight="SemiBold" SelectionChanged="FilterSelectionChanged">
-                            <ComboBoxItem xml:space="preserve">Featured</ComboBoxItem>
-                            <ComboBoxItem xml:space="preserve" IsSelected="True">Recent</ComboBoxItem>
-                            <ComboBoxItem xml:space="preserve">Popular</ComboBoxItem>
-                        </ComboBox>
-                        <ComboBox FontFamily="{StaticResource Jost}" IsEnabled="False" Margin="0,0,15,0" FontWeight="SemiBold" FontSize="18" Name="TypeBox" Height="40" Width="125" SelectionChanged="TypeFilterSelectionChanged">
+                        <ComboBox Grid.Column="1" Margin="5,0,5,0" FontFamily="{StaticResource Jost}" IsEnabled="False" Name="FilterBox" Height="40" MinWidth="140" FontSize="18" FontWeight="SemiBold" SelectionChanged="FilterSelectionChanged"/>
+                        <ComboBox Grid.Column="2" Margin="0,0,5,0" FontFamily="{StaticResource Jost}" IsEnabled="False" FontWeight="SemiBold" FontSize="18" Name="TypeBox" Height="40" MinWidth="140" SelectionChanged="TypeFilterSelectionChanged">
                             <ComboBoxItem xml:space="preserve" IsSelected="True">Mods</ComboBoxItem>
                             <ComboBoxItem xml:space="preserve">WiPs</ComboBoxItem>
                             <ComboBoxItem xml:space="preserve">Sounds</ComboBoxItem>
                             <ComboBoxItem xml:space="preserve">Tools</ComboBoxItem>
                             <ComboBoxItem xml:space="preserve">Tutorials</ComboBoxItem>
                         </ComboBox>
-                        <ComboBox FontFamily="{StaticResource Jost}" IsEnabled="False" Margin="0,0,15,0" Name="CatBox" Height="40" Width="250" SelectionChanged="MainFilterSelectionChanged">
+                        <ComboBox Grid.Column="3" FontFamily="{StaticResource Jost}" IsEnabled="False" Margin="0,0,5,0" Name="CatBox" Height="40" MinWidth="250" SelectionChanged="MainFilterSelectionChanged">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate >
                                     <StackPanel Orientation="Horizontal">
@@ -1107,7 +1207,7 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-                        <ComboBox FontFamily="{StaticResource Jost}" Margin="0,0,15,0" IsEnabled="False" Name="SubCatBox" Height="40" Width="250" SelectionChanged="SubFilterSelectionChanged">
+                        <ComboBox Grid.Column="4" FontFamily="{StaticResource Jost}" Margin="0,0,5,0" IsEnabled="False" Name="SubCatBox" Height="40" MinWidth="250" SelectionChanged="SubFilterSelectionChanged">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate >
                                     <StackPanel Orientation="Horizontal">
@@ -1117,9 +1217,12 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
-
-                        <Image Name="GB" VerticalAlignment="Center" HorizontalAlignment="Center" Height="45" Source="../Assets/GameBanana.png" Cursor="Hand" MouseLeftButtonDown="GameBanana_Click"/>
-                    </StackPanel>
+                        <TextBox Margin="0,0,40,0" Grid.Column="5" IsEnabled="False" KeyDown="SearchBar_KeyDown" Name="SearchBar" Height="40" MinWidth="100" HorizontalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                        <Button Grid.Column="5" IsEnabled="False" HorizontalAlignment="Right" Click="SearchButton_Click" Name="SearchButton" Height="40" Width="40">
+                            <fa5:ImageAwesome Icon="Solid_Search" Foreground="#f2f2f2" Margin="3"/>
+                        </Button>
+                        <Image Grid.Column="6" Name="GB" VerticalAlignment="Center" HorizontalAlignment="Center" Height="45" Source="../Assets/GameBanana.png" Cursor="Hand" MouseLeftButtonDown="GameBanana_Click"/>
+                    </Grid>
                     <Popup PlacementTarget="{Binding ElementName=GB}" IsOpen="{Binding IsMouseDirectlyOver, ElementName=GB, Mode=OneWay}" AllowsTransparency="True">
                         <Border CornerRadius="5" Panel.ZIndex="0" Margin="10">
                             <Border.BorderBrush>
@@ -1141,7 +1244,7 @@
                         <TextBlock FontFamily="{StaticResource Jost}" Margin="0,0,15,0" Foreground="#f2f2f2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" FontWeight="SemiBold">
                             Per Page:
                         </TextBlock>
-                        <ComboBox FontFamily="{StaticResource Jost}" IsEnabled="False" Name="PerPageBox" SelectionChanged="FilterSelectionChanged" Height="40" VerticalAlignment="Center">
+                        <ComboBox FontFamily="{StaticResource Jost}" IsEnabled="False" Name="PerPageBox" SelectionChanged="PerPageSelectionChanged" Height="40" VerticalAlignment="Center">
                             <ComboBoxItem>10</ComboBoxItem>
                             <ComboBoxItem IsSelected="True">20</ComboBoxItem>
                             <ComboBoxItem>30</ComboBoxItem>

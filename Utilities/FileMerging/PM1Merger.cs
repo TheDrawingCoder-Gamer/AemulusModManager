@@ -9,7 +9,7 @@ namespace AemulusModManager.Utilities.FileMerging
     {
         private static string compilerPath = $@"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}\Dependencies\PM1MessageScriptEditor\PM1MessageScriptEditor.exe";
 
-        public static void Merge(List<string> ModList, string game)
+        public static void Merge(List<string> ModList, string game, string language)
         {
             if (!Utils.CompilerExists(true)) return;
             List<string[]> foundFiles = new List<string[]>();
@@ -27,7 +27,7 @@ namespace AemulusModManager.Utilities.FileMerging
                     {
                         // Get the path of the file in original
                         string ogPath = $@"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}\Original\{game}\{Utils.GetRelativePath(file, dir, game, false)}";
-                        MergePm1s(new string[] { previousFile, file }, ogPath, game);
+                        MergePm1s(new string[] { previousFile, file }, ogPath, game, language);
                     }
                     string[] foundPm1 = { filePath, dir, file };
                     foundFiles.Add(foundPm1);
@@ -36,7 +36,7 @@ namespace AemulusModManager.Utilities.FileMerging
         }
 
         // Merge two bmds the second one being the higher priority
-        private static void MergePm1s(string[] bmds, string ogPath, string game)
+        private static void MergePm1s(string[] bmds, string ogPath, string game, string language)
         {
             // Check that the original bmd exists
             if (!File.Exists(ogPath))
@@ -52,25 +52,20 @@ namespace AemulusModManager.Utilities.FileMerging
             messages[1] = GetPm1Messages(bmds[1], game);
             ogMessages = GetPm1Messages(ogPath, game);
 
+            if (messages[0] == null || messages[1] == null || ogMessages == null)
+                return;
+
             // Merge the bmds
-            Utils.MergeFiles(game, bmds, messages, ogMessages);
+            Utils.MergeFiles(game, bmds, messages, ogMessages, language);
         }
 
         private static Dictionary<string, string> GetPm1Messages(string file, string game)
         {
-            try
-            {
-                // Decompile the pm1 to a msg that can be read easily
-                string msgFile = Path.ChangeExtension(file, "msg");
-                Utils.RunCommand(compilerPath, $"\"{file}\"");
+            // Decompile the pm1 to a msg that can be read easily
+            string msgFile = Path.ChangeExtension(file, "msg");
+            Utils.RunCommand(compilerPath, $"\"{file}\"");
 
-                return Utils.GetMessages(msgFile);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[ERROR] Error reading {file}. Cancelling pm1 merging");
-            }
-            return null;
+            return Utils.GetMessages(msgFile, "pm1");
         }
     }
 }

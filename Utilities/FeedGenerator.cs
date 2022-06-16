@@ -14,15 +14,20 @@ namespace AemulusModManager.Utilities
     public enum GameFilter
     {
         P3,
+        P3P,
         P4G,
+        P4GVita,
         P5,
-        P5S
+        P5R,
+        P5S,
+        PQ2
     }
     public enum FeedFilter
     {
         Featured,
         Recent,
-        Popular
+        Popular,
+        None
     }
     public enum TypeFilter
     {
@@ -45,7 +50,7 @@ namespace AemulusModManager.Utilities
                 return -1;
             return Double.Parse(keys.First());
         }
-        public static async Task GetFeed(int page, GameFilter game, TypeFilter type, FeedFilter filter, GameBananaCategory category, GameBananaCategory subcategory, int perPage)
+        public static async Task GetFeed(int page, GameFilter game, TypeFilter type, FeedFilter filter, GameBananaCategory category, GameBananaCategory subcategory, int perPage, string search)
         {
             error = false;
             if (feed == null)
@@ -55,7 +60,7 @@ namespace AemulusModManager.Utilities
                 feed.Remove(feed.Aggregate((l, r) => DateTime.Compare(l.Value.TimeFetched, r.Value.TimeFetched) < 0 ? l : r).Key);
             using (var httpClient = new HttpClient())
             {
-                var requestUrl = GenerateUrl(page, game, type, filter, category, subcategory, perPage);
+                var requestUrl = GenerateUrl(page, game, type, filter, category, subcategory, perPage, search);
                 if (feed.ContainsKey(requestUrl) && feed[requestUrl].IsValid)
                 {
                     CurrentFeed = feed[requestUrl];
@@ -91,10 +96,10 @@ namespace AemulusModManager.Utilities
                     feed[requestUrl] = CurrentFeed;
             }
         }
-        private static string GenerateUrl(int page, GameFilter game, TypeFilter type, FeedFilter filter, GameBananaCategory category, GameBananaCategory subcategory, int perPage)
+        private static string GenerateUrl(int page, GameFilter game, TypeFilter type, FeedFilter filter, GameBananaCategory category, GameBananaCategory subcategory, int perPage, string search)
         {
             // Base
-            var url = "https://gamebanana.com/apiv4/";
+            var url = "https://gamebanana.com/apiv6/";
             switch (type)
             {
                 case TypeFilter.Mods:
@@ -114,7 +119,38 @@ namespace AemulusModManager.Utilities
                     break;
             }
             // Different starting endpoint if requesting all mods instead of specific category
-            if (category.ID != null)
+            if (search != null)
+            {
+                url += $"ByName?_sName=*{search}*&_idGameRow=";
+                switch (game)
+                {
+                    case GameFilter.P3:
+                        url += "8502&";
+                        break;
+                    case GameFilter.P3P:
+                        url += "8583&";
+                        break;
+                    case GameFilter.P4G:
+                        url += "8263&";
+                        break;
+                    case GameFilter.P4GVita:
+                        url += "15703&";
+                        break;
+                    case GameFilter.P5:
+                        url += "7545&";
+                        break;
+                    case GameFilter.P5R:
+                        url += "8464&";
+                        break;
+                    case GameFilter.P5S:
+                        url += "9099&";
+                        break;
+                    case GameFilter.PQ2:
+                        url += "9561&";
+                        break;
+                }
+            }
+            else if (category.ID != null)
                 url += "ByCategory?";
             else
             {
@@ -124,19 +160,35 @@ namespace AemulusModManager.Utilities
                     case GameFilter.P3:
                         url += "8502&";
                         break;
+                    case GameFilter.P3P:
+                        url += "8583&";
+                        break;
                     case GameFilter.P4G:
                         url += "8263&";
+                        break;
+                    case GameFilter.P4GVita:
+                        url += "15703&";
                         break;
                     case GameFilter.P5:
                         url += "7545&";
                         break;
+                    case GameFilter.P5R:
+                        url += "8464&";
+                        break;
                     case GameFilter.P5S:
                         url += "9099&";
                         break;
+                    case GameFilter.PQ2:
+                        url += "9561&";
+                        break;
                 }
             }
+            var extraProps = type == TypeFilter.Tutorials ? String.Empty : ",_aAlternateFileSources,_nDownloadCount,_aFiles,_aModManagerIntegrations";
+            if (type != TypeFilter.WiPs)
+                extraProps += ",_bIsObsolete,_sObsolescenceNotice";
             // Consistent args
-            url += $"&_aArgs[]=_sbIsNsfw = false&_sRecordSchema=FileDaddy&_nPerpage={perPage}";
+            url += $"_csvProperties=_sName,_sModelName,_sProfileUrl,_aSubmitter,_tsDateUpdated,_tsDateAdded,_aPreviewMedia,_sText,_sDescription,_aCategory,_aRootCategory,_aGame,_nViewCount," +
+                $"_nLikeCount{extraProps}&_aArgs[]=_sbIsNsfw = false&_nPerpage={perPage}";
             // Sorting filter
             switch (filter)
             {
